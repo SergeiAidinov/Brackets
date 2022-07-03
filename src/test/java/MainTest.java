@@ -1,18 +1,17 @@
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class MainTest {
 
     List<String> listOfInitialStrings = List.of(
-            "hjkh(h(k)jh{hjkhkjh}hioh)jlj[kjgkjg]kljlkj(kljlkj){}",
-            "hjkh(h(k)jh{hjkh(kjh}hioh)jlj[kjgkjg]kljlkj(kljlkj){}",
-            ")hjkh(h(k)jh{hjkhkjh}hioh)jlj[kjgkjg]kljlkj(kljlkj){}"
 
-            );
+            "(Когда госу{дарс}тво) по[(вернул)]ось к {{человеку}} лицом, [(челов)]ек закричал от ужаса.{}",
+            ")Жители (этой) страны были очень [{замк}]нуты — одни и[знут]ри, другие снаружи.",
+            "Каждое огородное пугало мечтает повергать в ужас.",
+            "Разделяет не {пропас}ть,а разница уровней.(",
+            "А если {[людоед научится}] пользоваться {[ножо]}м и вилкой — это можно считать прогрессом?",
+            "Не всякая серая масса имеет что-то общее с {мозгом.{"
+    );
 
     @Test
     public void test(){

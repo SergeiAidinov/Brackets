@@ -1,11 +1,6 @@
-import java.awt.*;
-import java.util.Arrays;
-import java.util.List;
-
-
 public class Main {
 
-    private static String DEFAULT_STRING = "as(hjkhkjh[fsdf{rt5647}rbtreybert]wrtv)";
+    private static String DEFAULT_STRING = "Техника те({хник})ой, но лифт ([ломается]) чаще, {чем} лестница";
 
     public static void main(String[] args) {
 

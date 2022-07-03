@@ -1,4 +1,3 @@
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -14,9 +13,6 @@ public class BracketsValidator implements Validator {
     private final static Character SQUARE_CLOSING_BRACKET = ']';
     private final static Character CURLY_OPENING_BRACKET = '{';
     private final static Character CURLY_CLOSING_BRACKET = '}';
-    private final static String SIMPLE = "SIMPLE";
-    private final static String SQARE = "SQUARE";
-    private final static String CURLY = "CURLY";
 
     private static final Map<Character, Character> possibleBrackets = Map.of(
             SIMPLE_OPENING_BRACKET, SIMPLE_CLOSING_BRACKET,
@@ -24,33 +20,18 @@ public class BracketsValidator implements Validator {
             CURLY_OPENING_BRACKET, CURLY_CLOSING_BRACKET
     );
 
-    private final List<Bracket> simpleOpeningBrackets = new ArrayList<>();
-    private final List<Bracket> squareOpeningBrackets = new ArrayList<>();
-    private final List<Bracket> curlyOpeningBrackets = new ArrayList<>();
+    private final List<Bracket> openingBrackets = new ArrayList<>();
     private final List<Pair<Bracket, Bracket>> pairsOfBrackets = new ArrayList<>();
-
-    Map<String, Pair<List<Integer>, List<Integer>>> map =
-            Map.of(
-                    SIMPLE, Pair.of(new ArrayList<>(), new ArrayList<>()),
-                    SQARE, Pair.of(new ArrayList<>(), new ArrayList<>()),
-                    CURLY, Pair.of(new ArrayList<>(), new ArrayList<>())
-            );
-
-    private final List<Character> openingExamples =
-            possibleBrackets.keySet().stream().collect(Collectors.toList());
-
-    private final List<Character> closingExamples = openingExamples.stream()
-            .map(bracket -> possibleBrackets.get(bracket)).collect(Collectors.toList());
-
     private static List<String> subStringList = new ArrayList<>();
-    private static List<String> atomicSubStringList = new ArrayList<>();
+    private static final Set<String> atomicSubStringList = new HashSet<>();
 
     Logger logger = Logger.getLogger("BracketsValidator");
 
     @Override
-    public boolean isValid(String string) {
+    public boolean isValid(String initialString) {
+        logger.info("Checking the string: " + initialString);
         try {
-            procedure(string);
+            procedure(initialString);
             while (!subStringList.isEmpty()) {
                 String subStringToBeDevided = subStringList.remove(0);
                 procedure(subStringToBeDevided);
@@ -69,12 +50,14 @@ public class BracketsValidator implements Validator {
             }
         }).collect(Collectors.toSet());
 
-        StringBuilder message = new StringBuilder("Строка " + string + " состоит из следующих подстрок: " + "\n");
+        StringBuilder message = new StringBuilder("String \"" + initialString + "\" has got next substrings: " + "\n");
         atomicSubStringList.stream().forEach(atomicSubString -> {
             message.append(atomicSubString);
             message.append("\n");
         });
 
+        atomicSubStringList.clear();
+        subStringList.clear();
         logger.info(message.toString());
 
         return !result.contains(false);
@@ -85,19 +68,16 @@ public class BracketsValidator implements Validator {
         subStringList = parseString(string);
 
         List<String> undevidableSubStrings = new ArrayList<>();
-        String initialSubString = string;
         for (String subString : subStringList) {
-            if (!Helper.mayBeDevidedIntoSmallerSubStrings(subString)) {
+            if (!Helper.mayBeDividedIntoSmallerSubStrings(subString)) {
                 undevidableSubStrings.add(subString);
             }
         }
 
         atomicSubStringList.addAll(undevidableSubStrings);
         subStringList.removeAll(undevidableSubStrings);
-        subStringList.remove(initialSubString);
-        System.out.println();
+        subStringList.remove(string);
     }
-
 
     private List<String> parseString(String string) throws InvalidString {
 
@@ -111,18 +91,12 @@ public class BracketsValidator implements Validator {
 
     }
 
-
     private boolean checkRedundantOpeningBrackets() throws InvalidString {
 
-        if (simpleOpeningBrackets.size() == 0 &&
-                squareOpeningBrackets.size() == 0 &&
-                curlyOpeningBrackets.size() == 0) {
+        if (openingBrackets.size() == 0) {
             return true;
         } else {
-            List<Bracket> redundantBrackets = new ArrayList();
-            redundantBrackets.addAll(simpleOpeningBrackets);
-            redundantBrackets.addAll(squareOpeningBrackets);
-            redundantBrackets.addAll(curlyOpeningBrackets);
+            List<Bracket> redundantBrackets = new ArrayList(openingBrackets);
             StringBuilder message = new StringBuilder("Redundant opening bracket(s) at next positions: ");
             redundantBrackets.stream().forEach(bracket -> {
                 message.append(" ");
@@ -134,9 +108,7 @@ public class BracketsValidator implements Validator {
     }
 
     private void populateListsOfBrackets(String string) throws InvalidString {
-        simpleOpeningBrackets.clear();
-        squareOpeningBrackets.clear();
-        curlyOpeningBrackets.clear();
+        openingBrackets.clear();
         pairsOfBrackets.clear();
 
         for (int i = 0; i < string.length(); i++) {
@@ -147,16 +119,21 @@ public class BracketsValidator implements Validator {
             }
 
             if (letter == SIMPLE_OPENING_BRACKET) {
-                simpleOpeningBrackets.add(new Bracket(Bracket.TypeOfBracket.SIMPLE, true, i));
-            } else if (letter == SIMPLE_CLOSING_BRACKET) {
+                openingBrackets.add(new Bracket(Bracket.TypeOfBracket.SIMPLE, true, i));
+            }
+            if (letter == SIMPLE_CLOSING_BRACKET) {
                 compilePairAndAddToList(new Bracket(Bracket.TypeOfBracket.SIMPLE, false, i));
-            } else if (letter == SQUARE_OPENING_BRACKET) {
-                squareOpeningBrackets.add(new Bracket(Bracket.TypeOfBracket.SQAURE, true, i));
-            } else if (letter == SQUARE_CLOSING_BRACKET) {
+            }
+            if (letter == SQUARE_OPENING_BRACKET) {
+                openingBrackets.add(new Bracket(Bracket.TypeOfBracket.SQAURE, true, i));
+            }
+            if (letter == SQUARE_CLOSING_BRACKET) {
                 compilePairAndAddToList(new Bracket(Bracket.TypeOfBracket.SQAURE, false, i));
-            } else if (letter == CURLY_OPENING_BRACKET) {
-                curlyOpeningBrackets.add(new Bracket(Bracket.TypeOfBracket.CURLY, true, i));
-            } else if (letter == CURLY_CLOSING_BRACKET) {
+            }
+            if (letter == CURLY_OPENING_BRACKET) {
+                openingBrackets.add(new Bracket(Bracket.TypeOfBracket.CURLY, true, i));
+            }
+            if (letter == CURLY_CLOSING_BRACKET) {
                 compilePairAndAddToList(new Bracket(Bracket.TypeOfBracket.CURLY, false, i));
             }
         }
@@ -178,47 +155,41 @@ public class BracketsValidator implements Validator {
         if (currentListOfOpeningBrackets.isEmpty()) {
             throw new InvalidString("Redundant closing bracket at position " + closingBracket.getPosition());
         }
+
         Bracket openingBracket = currentListOfOpeningBrackets
                 .remove(currentListOfOpeningBrackets.size() - 1);
+
+        if (!doCompileAPair(openingBracket, closingBracket)){
+            throw new InvalidString("Disordered brackets near position " + closingBracket.getPosition());
+        }
+
         pairsOfBrackets.add(Pair.of(openingBracket, closingBracket));
+
+    }
+
+    private boolean doCompileAPair(Bracket openingBracket, Bracket closingBracket) {
+
+        return openingBracket.getTypeOfBracket().equals(closingBracket.getTypeOfBracket());
 
     }
 
     private List<Bracket> getLinkToBracketsList(Bracket closingBracket) {
         switch (closingBracket.getTypeOfBracket()) {
             case SIMPLE:
-                return simpleOpeningBrackets;
+                return openingBrackets;
             case CURLY:
-                return curlyOpeningBrackets;
+                return openingBrackets;
             case SQAURE:
-                return squareOpeningBrackets;
+                return openingBrackets;
             default:
                 return Collections.EMPTY_LIST;
         }
 
     }
 
-
     boolean analyzeAtomicSubString(String subString) throws InvalidString {
         return possibleBrackets.containsKey(subString.charAt(0)) &&
                 subString.charAt(subString.length() - 1) == possibleBrackets.get(subString.charAt(0));
-    }
-
-
-    private boolean compareLists(List<Character> openingBrackets, List<Character> reversedClosingBrackets) {
-
-        if (openingBrackets.size() != reversedClosingBrackets.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < openingBrackets.size(); i++) {
-
-            if (!reversedClosingBrackets.get(i).equals(possibleBrackets.get(openingBrackets.get(i)))) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private static class Helper {
@@ -226,25 +197,20 @@ public class BracketsValidator implements Validator {
         public static List<String> devideIntoSubstrings(String string, List<Pair<Bracket, Bracket>> pairsOfBrackets) {
 
             List<java.lang.String> subStrings = new ArrayList<>();
-            java.lang.String finalString = string;
-            pairsOfBrackets.stream().forEach(pair -> {
-                subStrings.add(finalString.substring(pair.getLeft().getPosition(), pair.getRight().getPosition() + 1));
-            });
+            for (Pair<Bracket, Bracket> pair : pairsOfBrackets) {
+                subStrings.add(string.substring(pair.getLeft().getPosition(), pair.getRight().getPosition() + 1));
+            }
 
             return subStrings;
         }
 
-        static boolean mayBeDevidedIntoSmallerSubStrings(String subString) {
+        static boolean mayBeDividedIntoSmallerSubStrings(String subString) {
             long quantityOfBrackets =
                     subString.chars().filter(c -> possibleBrackets.containsKey((char) c)
                             || possibleBrackets.containsValue((char) c))
                             .count();
 
-            if (quantityOfBrackets > 2 && quantityOfBrackets % 2 == 0) {
-                return true;
-            }
-
-            return false;
+            return quantityOfBrackets > 2 && quantityOfBrackets % 2 == 0;
         }
     }
 }
