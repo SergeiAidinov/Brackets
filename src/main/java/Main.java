@@ -6,7 +6,7 @@ public class Main {
 
         Validator bracketsValidator = new BracketsValidator();
         String string = args.length == 0 ? DEFAULT_STRING : args[0];
-        System.out.println("String " + string + " is valid: " + bracketsValidator.isValid(string));
+        System.out.println("Строка \"" + string  + "\" валидна: " + bracketsValidator.isValid(string));
 
     }
 }
